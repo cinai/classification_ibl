@@ -34,21 +34,24 @@ def save_xls(list_dfs, xls_path):
         df.to_excel(writer,sheet_name)
     writer.save()
 
+def read_df_list(path_list):
+    df_list = []
+    for p in path_list:
+        df_list.append(pd.read_excel(p))
+    return df_list
+
 def run_classifiers(training_set_list,test_set_list,folder_path):
     trained_c = []
     results_c = []
+    # get train df
+    train_set_list_df = read_df_list(training_set_list)
     # train classifiers
     for c in classifiers:
         # get train df
-        train_set_list_df = []
-        for l in training_set_list:
-            train_set_list_df.append(pd.read_excel(l))
         print("Training {}".format(str(c)))
         c.train(train_set_list_df)
     # get test df
-    test_set_list_df = []
-    for l in test_set_list:
-        test_set_list_df.append(pd.read_excel(l))
+    test_set_list_df = read_df_list(test_set_list)
     # test classifiers
     result_df = []
     end_text = ""
