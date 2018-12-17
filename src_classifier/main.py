@@ -13,11 +13,12 @@ from random_classifier import Biggest,Select2
 from svm import SVM
 from nearest_svm import Nearest_Phase
 from combination_svm import LC_SVM
+from markov_model import MM
 
 
 classifiers = [Biggest(),Select2(-1,-1),Select2(1,5),SVM(),SVM(True),
             Nearest_Phase(),Nearest_Phase(True),LC_SVM(),LC_SVM(True),
-            ,MC()]
+            MM()]
 #classifiers = [LC_SVM(),LC_SVM(True)]
 '''
 paths
@@ -79,13 +80,35 @@ if __name__ == '__main__':
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
         'experiment_path', help='path in which there are train and test folders with group discussions')
+    parser.add_argument(
+        'classifier', help='test particular classifier')
     args = parser.parse_args()
-    
+
     folder_path = args.experiment_path
-    test_set_list = []
-    for f in os.listdir(os.path.join(tables_path,folder_path,'test',)):
-        test_set_list.append(os.path.join(tables_path,folder_path,'test',f))
+    '''
     training_set_list = []
     for f in os.listdir(os.path.join(tables_path,folder_path,'train')):
         training_set_list.append(os.path.join(tables_path,folder_path,'train',f))
-    run_classifiers(training_set_list,test_set_list,folder_path)
+    df_list = read_df_list(training_set_list)
+    for df in df_list:
+        print(df.shape)
+        print(df.columns)
+    '''
+    if args.classifier != None:
+        training_set_list = []
+        for f in os.listdir(os.path.join(tables_path,folder_path,'train')):
+            training_set_list.append(os.path.join(tables_path,folder_path,'train',f))
+        df_list = read_df_list(training_set_list)
+        classifier = eval(args.classifier+'()')
+        topics = classifier.train(df_list)
+        xls_name = 'topics_means_by_phase_{}_{}.xlsx'.format(folder_path,
+                                            datetime.now().timestamp())
+        save_xls([topics],xls_name)
+    else:
+        test_set_list = []
+        for f in os.listdir(os.path.join(tables_path,folder_path,'test',)):
+            test_set_list.append(os.path.join(tables_path,folder_path,'test',f))
+        training_set_list = []
+        for f in os.listdir(os.path.join(tables_path,folder_path,'train')):
+            training_set_list.append(os.path.join(tables_path,folder_path,'train',f))
+        run_classifiers(training_set_list,test_set_list,folder_path)
