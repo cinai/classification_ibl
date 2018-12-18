@@ -105,4 +105,4 @@ venv.bak/
 data/
 raw/
 results/
-.txt
+*.txt
