@@ -79,7 +79,8 @@ if __name__ == '__main__':
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
-        'experiment_path', help='path in which there are train and test folders with group discussions')
+        'experiment_path', help='path in which there are train and \
+        test folders with group discussions')
     parser.add_argument(
         'classifier', help='test particular classifier')
     args = parser.parse_args()
