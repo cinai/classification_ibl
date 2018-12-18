@@ -13,7 +13,7 @@ root_path = os.path.join(os.getcwd(),'..')
 sys.path.append(root_path)
 
 from src import phase_classification as pc
-
+from hmm import HMM
 
 '''
 Gets the Transition probability matrix from a list
@@ -36,16 +36,17 @@ class MM:
         return total
 
     def get_normalized_tpm(self,tpm):
-        pass
-        # I didnt know what to do because we don't really
-        # want to guess what phase is next
-
+        norm_tpm = np.zeros(tpm.shape)
+        for i in range(tpm.shape[0]):
+            norm_tpm[i,:] = tpm[i,:]/sum(tpm[i,:])
+        return norm_tpm
+    
     def train(self,training_set_list):
         tpms = []
         for df in training_set_list:
             tpms.append(self.get_tpm(df.phase))
         # summarize tpm
-        total_tpm = self.get_sum_tpm(tpms)
+        total_tpm = self.get_normalized_tpm(tpms)
         print(total_tpm)
         # get mean topic distribution
         topic_means = []
@@ -54,6 +55,9 @@ class MM:
             tm,cv = self.get_mean_and_covar_per_phase(training_set_list,p)
             topic_means.append(tm)
             covariance_matrices.append(cv)
+
+        # build hidden markov model
+        hmm = HMM(total_tpm)
         return total_tpm,pd.DataFrame(topic_means),covariance_matrices
         #training_set = pc.join_list_df(training_set_list)
         #X_train = [x[:-1] for x in training_set]
