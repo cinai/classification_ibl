@@ -20,12 +20,18 @@ class HMM:
 		f: vector with the n probability density functions. f will indicate
 		the probability that an observed feature vector is related to each
 		state.
+		mean: lista de medias
+		cov: lista de covarianzas
 	'''
-	def __init__(self,p0,tpm,f):
+	def __init__(self,p0,tpm,f,mean,cov,vh):
 		self.p0 = p0
 		self.n = len(p0)
+		assert self.n == len(tpm)
 		self.tpm = tpm
 		self.f = f
+		self.mean = mean
+		self.cov = cov
+		self.vh = vh
 
 	'''
 	Calculates the sequence of states that maximizes the probability of
@@ -56,7 +62,7 @@ class HMM:
 		observation : feature vector
 	'''
 	def get_f_observations(observation):
-		return [f_i(o) for f_i in f] # i: 0...n-1
+		return [f_i(np.matmul(self.vh,o)) for f_i in f] # i: 0...n-1
 
 	'''
 	Uses the prior probability and the first observation to calculate
