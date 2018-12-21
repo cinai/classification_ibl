@@ -47,8 +47,8 @@ class HMM:
 		n = self.n
 		t = len(observations)
 		V = np.zeros((n,t))
-		S = np.zeros((n,t))*-1
-		f_observations = [get_f_observations(o) for o in observations]
+		S = np.zeros((n,t),dtype=int)*-1
+		f_observations = [self.get_f_observations(o) for o in observations]
 		self.get_probabilities_first_observation(V,f_observations[0])
 		self.fill_matrix(V,S,f_observations)
 		sequence_of_states = self.find_best_sequence(V[:,-1],S)
@@ -61,8 +61,8 @@ class HMM:
 	Args:
 		observation : feature vector
 	'''
-	def get_f_observations(observation):
-		return [f_i(np.matmul(self.vh,o)) for f_i in f] # i: 0...n-1
+	def get_f_observations(self,o):
+		return [self.f(np.matmul(self.vh,o),self.mean[i],self.cov[i]) for i in range(self.n)] # i: 0...n-1
 
 	'''
 	Uses the prior probability and the first observation to calculate
@@ -74,7 +74,7 @@ class HMM:
 	'''
 	def get_probabilities_first_observation(self,V,f_o):
 		for i in range(self.n):
-			V[0,:] = self.p[i]*f_o[i]
+			V[0,:] = self.p0[i]*f_o[i]
 
 	'''
 	Get the probabilities of the last stage to be a certain state
@@ -104,7 +104,7 @@ class HMM:
 		for j in range(1,len(f_observations)): #j: 1...t-1
 			for i in range(self.n):
 				f_o = f_observations[j][i]
-				p_last_stage = get_last_stage_probabilities(V[:,j-1],i,f_o)
+				p_last_stage = self.get_last_stage_probabilities(V[:,j-1],i,f_o)
 				S[i,j] = np.argmax(p_last_stage)
 				V[i,j] = p_last_stage[S[i,j]]
 
@@ -119,9 +119,9 @@ class HMM:
 		f_observations: probability of the observations to belong to the states
 	'''
 	def find_best_sequence(self,v_final,S):
-		stage = np.argmax(v_final)
-		best_sequence = [stage]
+		state = np.argmax(v_final)
+		best_sequence = [state]
 		for j in range(S.shape[1]-1,0,-1):
-			stage = S[j,stage]
-			best_sequence.insert(0,stage)
+			state = S[state,j]
+			best_sequence.insert(0,state)
 		return best_sequence

@@ -13,7 +13,7 @@ from random_classifier import Biggest,Select2
 from svm import SVM
 from nearest_svm import Nearest_Phase
 from combination_svm import LC_SVM
-from markov_model import MM
+from markov_model_classifier import MM
 
 
 #classifiers = [Biggest(),Select2(-1,-1),Select2(1,5),SVM(),SVM(True),
@@ -82,7 +82,7 @@ if __name__ == '__main__':
         'experiment_path', help='path in which there are train and \
         test folders with group discussions')
     parser.add_argument(
-        'classifier', help='test particular classifier')
+        'classifier', nargs='?',help='test particular classifier',)
     args = parser.parse_args()
 
     folder_path = args.experiment_path

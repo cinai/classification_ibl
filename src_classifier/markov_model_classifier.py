@@ -13,8 +13,9 @@ root_path = os.path.join(os.getcwd(),'..')
 sys.path.append(root_path)
 
 from src import phase_classification as pc
-from .hmm import HMM
+from src_classifier.hmm import HMM
 from scipy.stats import multivariate_normal
+from sklearn.metrics import confusion_matrix,classification_report,accuracy_score
 
 '''
 Gets the Transition probability matrix from a list
@@ -22,6 +23,9 @@ of phases. There are 5 phases, integers from 1 to 5.
 '''
 class MM:
     THE_PHASES = range(1,6)
+
+    def __str__(self):
+        return "Markov model"
 
     def get_tpm(self,phases):
         n = len(self.THE_PHASES)
@@ -72,7 +76,8 @@ class MM:
         f = multivariate_normal.pdf
         # build hidden markov model
         hmm = HMM(p0,total_tpm,f,topic_means,covariance_matrices,vh)
-        return hmm
+        self.hmm = hmm
+        #return hmm
         #return total_tpm,topic_means,covariance_matrices
         #training_set = pc.join_list_df(training_set_list)
         #X_train = [x[:-1] for x in training_set]
@@ -150,7 +155,7 @@ class MM:
             observations.append(self.get_distributions_per_phase(training_set_list,i))
         obs = self.group_observations(observations)
         u, s, vh = np.linalg.svd(obs)
-        vh = vh[:20,:]
+        vh = vh[:5,:]
         observations = self.project_observations(observations,vh)
         return f(observations),vh
 
@@ -164,12 +169,12 @@ class MM:
             aux_real = list(test.phase.values)
             features = test.values[:,:-1]
             reality += aux_real
-            aux_prediction = hmm.get_sequence_of_states(features)
+            aux_prediction = self.hmm.get_sequence_of_states(features)
             prediction += aux_prediction
         cm = confusion_matrix(reality, prediction)
         try:
-            df = pd.DataFrame(cm,columns=["Predicted {}".format(i) for i in labels])
-            df.index = labels
+            df = pd.DataFrame(cm,columns=["Predicted {}".format(i) for i in self.THE_PHASES])
+            df.index = self.THE_PHASES
         except ValueError:
             df = pd.DataFrame(cm)
         text = classification_report(reality,prediction)
