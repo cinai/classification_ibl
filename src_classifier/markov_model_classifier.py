@@ -15,7 +15,9 @@ sys.path.append(root_path)
 from src import phase_classification as pc
 from src_classifier.hmm import HMM
 from scipy.stats import multivariate_normal
-from sklearn.metrics import confusion_matrix,classification_report,accuracy_score
+from sklearn.metrics import confusion_matrix,\
+                            classification_report,\
+                            accuracy_score
 
 '''
 Gets the Transition probability matrix from a list
@@ -105,7 +107,8 @@ class MM:
         covariance_matrices = []
         for p in self.THE_PHASES:
             try:
-                tm,cv = self.get_mean_and_covar_per_phase(observations[p-1])
+                o = observations[p-1]
+                tm,cv = self.get_mean_and_covar_per_phase(o)
             except:
                 print(p)
                 print(observations)
@@ -149,10 +152,11 @@ class MM:
 
     def get_means_and_covar_matrices(self,training_set_list,f=None):
         if not f:
-            f = self.kn2
+            f = self.n
         observations = []
         for i in self.THE_PHASES:
-            observations.append(self.get_distributions_per_phase(training_set_list,i))
+            observations.append(
+                self.get_distributions_per_phase(training_set_list,i))
         obs = self.group_observations(observations)
         u, s, vh = np.linalg.svd(obs)
         vh = vh[:5,:]
@@ -162,6 +166,12 @@ class MM:
     def test(self,test_set_list):
         return self.results(test_set_list)
 
+    def map_states_to_phases(self,states):
+        sequence = []
+        for s in states:
+            sequence.append(self.THE_PHASES[s])
+        return sequence
+
     def results(self,test_set_list):
         reality = []
         prediction = []
@@ -169,11 +179,13 @@ class MM:
             aux_real = list(test.phase.values)
             features = test.values[:,:-1]
             reality += aux_real
-            aux_prediction = self.hmm.get_sequence_of_states(features)
+            aux_prediction = self.map_states_to_phases(
+                self.hmm.get_sequence_of_states(features))
             prediction += aux_prediction
         cm = confusion_matrix(reality, prediction)
         try:
-            df = pd.DataFrame(cm,columns=["Predicted {}".format(i) for i in self.THE_PHASES])
+            cols = ["Predicted {}".format(i) for i in self.THE_PHASES]
+            df = pd.DataFrame(cm,columns=cols)
             df.index = self.THE_PHASES
         except ValueError:
             df = pd.DataFrame(cm)
@@ -181,3 +193,4 @@ class MM:
         text += "\n accuracy: {}".format(accuracy_score(reality, prediction))
         text += "\n mean error: {}".format(pc.mean_error(reality,prediction))
         return df,text
+

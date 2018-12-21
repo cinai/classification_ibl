@@ -62,7 +62,8 @@ class HMM:
 		observation : feature vector
 	'''
 	def get_f_observations(self,o):
-		return [self.f(np.matmul(self.vh,o),self.mean[i],self.cov[i]) for i in range(self.n)] # i: 0...n-1
+		return [self.f(np.matmul(self.vh,o),
+		self.mean[i],self.cov[i]) for i in range(self.n)] # i: 0...n-1
 
 	'''
 	Uses the prior probability and the first observation to calculate
