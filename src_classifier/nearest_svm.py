@@ -160,10 +160,10 @@ class Nearest_Phase:
             df.index = labels
         except ValueError:
             df = pd.DataFrame(cm)
-        text = classification_report(reality,prediction)
-        text += "\n accuracy: {}".format(accuracy_score(reality, prediction))
-        text += "\n mean error: {}".format(pc.mean_error(reality,prediction))
-        return df,text
+        report = classification_report(reality,prediction) 
+        accuracy = accuracy_score(reality, prediction)
+        mean_error = pc.mean_error(reality,prediction)
+        return df,accuracy,mean_error,report
 
 
     def test(self,test_set_list):

@@ -8,6 +8,7 @@ There are:
 '''
 
 import numpy as np
+from scipy.stats import multivariate_normal
 
 class HMM:
 
@@ -28,10 +29,11 @@ class HMM:
 		self.n = len(p0)
 		assert self.n == len(tpm)
 		self.tpm = tpm
-		self.f = f
+		self.f = multivariate_normal.logpdf
 		self.mean = mean
 		self.cov = cov
 		self.vh = vh
+		self.IS_LOG = True
 
 	'''
 	Calculates the sequence of states that maximizes the probability of
@@ -52,7 +54,6 @@ class HMM:
 		self.get_probabilities_first_observation(V,f_observations[0])
 		self.fill_matrix(V,S,f_observations)
 		sequence_of_states = self.find_best_sequence(V[:,-1],S)
-
 		return sequence_of_states
 
 	'''
@@ -75,8 +76,7 @@ class HMM:
 	'''
 	def get_probabilities_first_observation(self,V,f_o):
 		for i in range(self.n):
-			V[0,:] = self.p0[i]*f_o[i]
-
+			V[i,0] = self.p0[i]*f_o[i]
 	'''
 	Get the probabilities of the last stage to be a certain state
 
@@ -88,7 +88,11 @@ class HMM:
 	def get_last_stage_probabilities(self,v_last,state,f_o):
 		probabilities = []
 		for last_state in range(self.n):
-			p = v_last[last_state]*self.tpm[last_state,state]*f_o
+			if self.IS_LOG:
+				v = np.log(self.tpm[last_state,state])
+				p = v_last[last_state]+v+f_o
+			else:
+				p = v_last[last_state]*self.tpm[last_state,state]*f_o
 			probabilities.append(p)
 		return probabilities
 

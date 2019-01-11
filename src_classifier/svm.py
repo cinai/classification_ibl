@@ -82,15 +82,21 @@ class SVM:
             aux = list(test.phase.values)
             features = test.values[:,:-1]
             reality += aux
-            prediction += self.first_layer_classifier(features,0.0)
-
+            aux_prediction = self.first_layer_classifier(features,0.0)
+            prediction += aux_prediction
+            '''
+            print("****")
+            print(aux)
+            print("****")
+            print(aux_prediction)
+            '''
         cm = confusion_matrix(reality, prediction)
         df = pd.DataFrame(cm,columns=["Predicted {}".format(i) for i in labels])
         df.index = labels
-        text = classification_report(reality,prediction)
-        text += "\n accuracy: {}".format(accuracy_score(reality, prediction))
-        text += "\n mean error: {}".format(pc.mean_error(reality,prediction))
-        return df,text
+        report = classification_report(reality,prediction) 
+        accuracy = accuracy_score(reality, prediction)
+        mean_error = pc.mean_error(reality,prediction)
+        return df,accuracy,mean_error,report
 
     def test(self,test_set_list):
         return self.results(test_set_list)

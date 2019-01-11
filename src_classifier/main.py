@@ -16,9 +16,9 @@ from combination_svm import LC_SVM
 from markov_model_classifier import MM
 
 
-#classifiers = [Biggest(),Select2(-1,-1),Select2(1,5),SVM(),SVM(True),
-#            Nearest_Phase(),Nearest_Phase(True),LC_SVM(),LC_SVM(True),
-classifiers = [MM()]
+classifiers = [Biggest(),Select2(-1,-1),Select2(1,5),SVM(),SVM(True),
+            Nearest_Phase(),Nearest_Phase(True),LC_SVM(),LC_SVM(True),MM()]
+#classifiers = [MM()]
 #classifiers = [LC_SVM(),LC_SVM(True)]
 '''
 paths

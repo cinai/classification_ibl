@@ -36,6 +36,10 @@ class MM:
         for p_j in phases[1:]:
             tpm[p_i-1,p_j-1] += 1
             p_i = p_j
+        for p_i in range(n):
+            for p_j in range(n):
+                if tpm[p_i,p_j] < pow(10,-8):
+                    tpm[p_i,p_j] = pow(10,-8)
         return tpm
 
     def get_sum_tpm(self,list_tpm):
@@ -60,10 +64,11 @@ class MM:
         for df in training_set_list:
             tpms.append(self.get_tpm(df.phase))
         # summarize tpm
-        total_tpm = self.get_normalized_tpm(self.get_sum_tpm(tpms))
+        sum_tpm = self.get_sum_tpm(tpms)
+        total_tpm = self.get_normalized_tpm(sum_tpm)
         #print(total_tpm)
         # get mean and cov from topic distribution
-        t_m,vh = self.get_means_and_covar_matrices(training_set_list)
+        t_m,vh = self.get_means_and_covar_matrices(training_set_list,vh_i=5)
         topic_means,covariance_matrices = t_m
         
         '''
@@ -75,7 +80,7 @@ class MM:
             covariance_matrices.append(cv)
         '''
         # define multivariate distribution
-        f = multivariate_normal.pdf
+        f = multivariate_normal.logpdf
         # build hidden markov model
         hmm = HMM(p0,total_tpm,f,topic_means,covariance_matrices,vh)
         self.hmm = hmm
@@ -150,7 +155,7 @@ class MM:
             result.append(np.array(aux))
         return result
 
-    def get_means_and_covar_matrices(self,training_set_list,f=None):
+    def get_means_and_covar_matrices(self,training_set_list,f=None,vh_i=2):
         if not f:
             f = self.n
         observations = []
@@ -159,9 +164,19 @@ class MM:
                 self.get_distributions_per_phase(training_set_list,i))
         obs = self.group_observations(observations)
         u, s, vh = np.linalg.svd(obs)
-        vh = vh[:5,:]
+        vh = vh[:vh_i,:]
         observations = self.project_observations(observations,vh)
         return f(observations),vh
+
+    def get_test_means_and_covar_matrices(self,training_set_list,f=None,vh_i=2):
+        if not f:
+            f = self.n
+        observations = []
+        for i in self.THE_PHASES:
+            observations.append(
+                self.get_distributions_per_phase(training_set_list,i))
+        n = len(observations[0][0])
+        return f(observations),np.eye(n,n)
 
     def test(self,test_set_list):
         return self.results(test_set_list)
@@ -175,13 +190,16 @@ class MM:
     def results(self,test_set_list):
         reality = []
         prediction = []
-        for test in test_set_list:
+        for i,test in enumerate(test_set_list):
             aux_real = list(test.phase.values)
             features = test.values[:,:-1]
             reality += aux_real
             aux_prediction = self.map_states_to_phases(
                 self.hmm.get_sequence_of_states(features))
             prediction += aux_prediction
+            #print("Test {} accuracy: {}".format(i,accuracy_score(aux_real,aux_prediction)))
+            #print("Test {} cm:\n {}".format(i,confusion_matrix(aux_real,aux_prediction)))
+
         cm = confusion_matrix(reality, prediction)
         try:
             cols = ["Predicted {}".format(i) for i in self.THE_PHASES]
@@ -189,8 +207,8 @@ class MM:
             df.index = self.THE_PHASES
         except ValueError:
             df = pd.DataFrame(cm)
-        text = classification_report(reality,prediction)
-        text += "\n accuracy: {}".format(accuracy_score(reality, prediction))
-        text += "\n mean error: {}".format(pc.mean_error(reality,prediction))
-        return df,text
+        report = classification_report(reality,prediction) 
+        accuracy = accuracy_score(reality, prediction)
+        mean_error = pc.mean_error(reality,prediction)
+        return df,accuracy,mean_error,report
 

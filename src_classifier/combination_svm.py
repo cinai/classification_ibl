@@ -134,7 +134,6 @@ class LC_SVM:
         train,val = pc.split_df_list(training_set_list,0.2,SEED)
         # find threshold to split using train and val set
         self.threshold = self.find_threshold(train,val,SEED)
-        print(self.threshold)
         # train svm with all the data 
         training_set = pc.join_list_df(training_set_list)
         X_train = [x[:-1] for x in training_set]
@@ -170,10 +169,10 @@ class LC_SVM:
             df.index = labels
         except ValueError:
             df = pd.DataFrame(cm)
-        text = classification_report(reality,prediction)
-        text += "\n accuracy: {}".format(accuracy_score(reality, prediction))
-        text += "\n mean error: {}".format(pc.mean_error(reality,prediction))
-        return df,text
+        report = classification_report(reality,prediction) 
+        accuracy = accuracy_score(reality, prediction)
+        mean_error = pc.mean_error(reality,prediction)
+        return df,accuracy,mean_error,report
 
 
     def test(self,test_set_list):

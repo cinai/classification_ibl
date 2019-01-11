@@ -86,10 +86,10 @@ class Biggest:
         cm = confusion_matrix(reality, prediction)
         df = pd.DataFrame(cm,columns=["Predicted {}".format(i) for i in labels])
         df.index = labels
-        text = classification_report(reality,prediction)
-        text += "\n accuracy: {}".format(accuracy_score(reality, prediction))
-        text += "\n mean error: {}".format(pc.mean_error(reality,prediction))
-        return df,text
+        report = classification_report(reality,prediction) 
+        accuracy = accuracy_score(reality, prediction)
+        mean_error = pc.mean_error(reality,prediction)
+        return df,accuracy,mean_error,report
 
     def test(self,test_set_list):
         if self.biggest_phase != -1:
@@ -147,10 +147,10 @@ class Select2:
         cm = confusion_matrix(reality, prediction)
         df = pd.DataFrame(cm,columns=["Predicted {}".format(i) for i in labels])
         df.index = labels
-        text = classification_report(reality,prediction)
-        text += "\n accuracy: {}".format(accuracy_score(reality, prediction))
-        text += "\n mean error: {}".format(pc.mean_error(reality,prediction))
-        return df,text
+        report = classification_report(reality,prediction) 
+        accuracy = accuracy_score(reality, prediction)
+        mean_error = pc.mean_error(reality,prediction)
+        return df,accuracy,mean_error,report
 
     def test(self,test_set_list):
         if self.p1 != -1:
